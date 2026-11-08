@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>بصمة الحضور الذكية</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px 25px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    .icon {
+      font-size: 50px;
+      margin-bottom: 15px;
+    }
+    h2 {
+      margin: 0 0 10px 0;
+      color: #1a1a1a;
+      font-size: 22px;
+    }
+    p {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 25px 0;
+    }
+    .btn {
+      background: #25D366;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 15px 25px;
+      font-size: 16px;
+      font-weight: bold;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.2s;
+    }
+    .btn:active {
+      background: #1eb857;
+    }
+    .status {
+      margin-top: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .status.loading { display: block; background: #e8f4fd; color: #0288d1; }
+    .status.success { display: block; background: #e8f8ed; color: #2e7d32; }
+    .status.error { display: block; background: #fde8e8; color: #c62828; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="icon" id="iconDisplay">📍</div>
+    <h2 id="titleDisplay">تسجيل الحضور والانصراف</h2>
+    <p id="descDisplay">يرجى الضغط على الزر أدناه لتأكيد موقعك الجغرافي الحالي واعتماد بصمتك.</p>
+    
+    <button class="btn" id="submitBtn" onclick="submitLocation()">
+      <span>تأكيد الموقع وتسجيل البصمة</span>
+    </button>
+
+    <div class="status" id="statusBox"></div>
+  </div>
+
+  <script>
+    // ⚠️ استبدل هذا الرابط برابط الـ Production Webhook الثاني من n8n لاحقاً
+    const SUBMIT_URL = 'https://YOUR-N8N-PUBLIC-URL/webhook/checkin-submit';
+
+    const token = new URLSearchParams(location.search).get('t');
+    const statusBox = document.getElementById('statusBox');
+    const submitBtn = document.getElementById('submitBtn');
+    const titleDisplay = document.getElementById('titleDisplay');
+    const descDisplay = document.getElementById('descDisplay');
+    const iconDisplay = document.getElementById('iconDisplay');
+
+    if (!token) {
+      showStatus('error', 'رابط غير صالح أو منتهي الصلاحية.');
+      submitBtn.style.display = 'none';
+    }
+
+    function showStatus(type, msg) {
+      statusBox.className = 'status ' + type;
+      statusBox.textContent = msg;
+    }
+
+    function submitLocation() {
+      if (!navigator.geolocation) {
+        showStatus('error', 'متصفحك لا يدعم تحديد الموقع الجغرافي.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.6';
+      showStatus('loading', 'جاري تحديد إحداثياتك بدقة عالية...');
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const coords = position.coords;
+          showStatus('loading', 'جاري التحقق من النطاق وتسجيل البصمة...');
+
+          try {
+            const response = await fetch(SUBMIT_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                token: token,
+                lat: coords.latitude,
+                lng: coords.longitude,
+                accuracy: coords.accuracy,
+                posTime: position.timestamp,
+                clientTime: Date.now()
+              })
+            });
+
+            const resData = await response.json();
+
+            if (resData.status === 'OK') {
+              iconDisplay.textContent = '✅';
+              titleDisplay.textContent = 'تم التسجيل بنجاح';
+              descDisplay.textContent = resData.message || 'تم اعتماد حضورك/انصرافك بنجاح.';
+              submitBtn.style.display = 'none';
+              showStatus('success', 'يمكنك إغلاق هذه الصفحة الآن.');
+            } else {
+              iconDisplay.textContent = '❌';
+              titleDisplay.textContent = 'تعذر التسجيل';
+              descDisplay.textContent = resData.message || 'الموقع خارج نطاق الفرع المعتمد.';
+              submitBtn.disabled = false;
+              submitBtn.style.opacity = '1';
+              showStatus('error', resData.message || 'فشل التحقق.');
+            }
+          } catch (err) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            showStatus('error', 'فشل الاتصال بالخادم، يرجى المحاولة ثانية.');
+          }
+        },
+        (error) => {
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+          let errText = 'يرجى تفعيل الـ GPS والسماح للمتصفح بالوصول للموقع.';
+          if (error.code === error.TIMEOUT) errText = 'انتهت مهلة قراءة الموقع، حاول مجدداً.';
+          showStatus('error', errText);
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+      );
+    }
+  </script>
+</body>
+</html>ذ  
