@@ -10,13 +10,13 @@
   <style>
     :root {
       --bg-dark: #070b14;
-      --card-bg: rgba(13, 22, 41, 0.75);
+      --card-bg: rgba(13, 22, 41, 0.85);
       --neon-blue: #00d2ff;
       --neon-cyan: #00f2fe;
-      --neon-glow: rgba(0, 210, 255, 0.4);
+      --neon-glow: rgba(0, 210, 255, 0.45);
       --text-main: #ffffff;
       --text-muted: #8ea1c1;
-      --border-color: rgba(0, 210, 255, 0.2);
+      --border-color: rgba(0, 210, 255, 0.25);
       --success: #00e676;
       --danger: #ff5252;
     }
@@ -32,8 +32,8 @@
     body {
       background-color: var(--bg-dark);
       background-image: 
-        radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.15) 0%, transparent 60%),
-        radial-gradient(circle at 50% 100%, rgba(0, 114, 255, 0.1) 0%, transparent 50%);
+        radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.18) 0%, transparent 60%),
+        radial-gradient(circle at 50% 100%, rgba(0, 114, 255, 0.12) 0%, transparent 50%);
       color: var(--text-main);
       display: flex;
       justify-content: center;
@@ -47,47 +47,51 @@
       width: 100%;
       max-width: 440px;
       background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
       border: 1px solid var(--border-color);
       border-radius: 28px;
       padding: 36px 24px 28px;
       text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 210, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 210, 255, 0.1);
       position: relative;
     }
 
     .logo-wrapper {
       position: relative;
-      width: 130px;
-      height: 130px;
-      margin: 0 auto 20px;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 24px;
       display: flex;
       justify-content: center;
       align-items: center;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--neon-blue);
+      box-shadow: 0 0 25px var(--neon-glow);
+      background: #000;
     }
 
     .logo-wrapper::after {
       content: '';
       position: absolute;
-      width: 100%;
-      height: 100%;
+      inset: -5px;
       border-radius: 50%;
       background: var(--neon-cyan);
       filter: blur(20px);
-      opacity: 0.35;
+      opacity: 0.3;
       z-index: 1;
+      pointer-events: none;
     }
 
     .logo-img {
-      width: 100%;
-      height: 100%;
+      width: 122%;
+      height: 122%;
       object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid var(--neon-blue);
+      object-position: center;
       position: relative;
       z-index: 2;
-      box-shadow: 0 0 25px var(--neon-glow);
+      transform: scale(1.02);
     }
 
     .brand-title {
@@ -191,13 +195,13 @@
 
   <div class="container">
     <div class="logo-wrapper">
-      <img src="logo.png" alt="dot Ai" class="logo-img" onerror="this.src='https://raw.githubusercontent.com/shamhout/attendance-checkin/main/logo.png'">
+      <img src="logo.png" alt="dot Ai" class="logo-img" id="brandLogo">
     </div>
 
     <h1 class="brand-title" id="pageTitle">تسجيل الدوام الذكي</h1>
     <p class="sub-title" id="pageDesc">منظومة الحضور والانصراف المعتمدة بالتحقق الجغرافي الفوري</p>
 
-    <button class="btn-submit" id="submitBtn" onclick="submitAttendance()">
+    <button class="btn-submit" id="submitBtn" onclick="requestLocation()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
         <circle cx="12" cy="10" r="3"/>
@@ -217,7 +221,7 @@
   </div>
 
   <script>
-    // ⚠️ استبدل هذا الرابط لاحقاً برابط الـ Production Webhook الثاني من n8n
+    // ⚠️ استبدل هذا الرابط برابط الـ Production Webhook الثاني من n8n لاحقاً
     const SUBMIT_URL = 'https://YOUR-N8N-PUBLIC-URL/webhook/checkin-submit';
 
     const token = new URLSearchParams(location.search).get('t');
@@ -236,62 +240,83 @@
       statusBox.textContent = text;
     }
 
-    function submitAttendance() {
+    function requestLocation() {
       if (!token) return;
 
       if (!navigator.geolocation) {
-        showStatus('error', '❌ جهازك لا يدعم تحديد الموقع الجغرافي الدقيق.');
+        showStatus('error', '❌ جهازك لا يدعم خاصية تحديد الموقع.');
         return;
       }
 
       submitBtn.disabled = true;
-      showStatus('loading', '🛰️ جاري التقاط إحداثيات الـ GPS بدقة عالية...');
+      showStatus('loading', '🛰️ جاري التقاط إحداثيات الموقع الحالي...');
 
+      // المحاولة الأولى: قراءة عالية الدقة
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const coords = position.coords;
-          showStatus('loading', '⚡ جاري التحقق من النطاق وتسجيل البصمة في السجلات...');
-
-          try {
-            const response = await fetch(SUBMIT_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                token: token,
-                lat: coords.latitude,
-                lng: coords.longitude,
-                accuracy: coords.accuracy,
-                posTime: position.timestamp,
-                clientTime: Date.now()
-              })
-            });
-
-            const res = await response.json();
-
-            if (res.status === 'OK') {
-              pageTitle.textContent = 'تم التسجيل بنجاح ✅';
-              pageDesc.textContent = res.message || 'تم اعتماد تسجيل دوامك بنجاح.';
-              submitBtn.style.display = 'none';
-              showStatus('success', 'شكراً لك، يمكنك إغلاق الصفحة الآن والعودة للواتساب.');
-            } else {
-              pageTitle.textContent = 'تعذر التسجيل ❌';
-              pageDesc.textContent = res.message || 'أنت خارج النطاق المسموح به للفرع.';
-              submitBtn.disabled = false;
-              showStatus('error', res.message || 'فشلت عملية التحقق.');
-            }
-          } catch (e) {
-            submitBtn.disabled = false;
-            showStatus('error', '⚠️ حدث خطأ في الاتصال بالسيرفر. يرجى التأكد من الإنترنت والمحاولة مرة أخرى.');
+        (pos) => sendCoords(pos),
+        (err) => {
+          // إذا انتهت المهلة، التبديل السريع للقراءة التلقائية لضمان عدم التعليق
+          if (err.code === err.TIMEOUT) {
+            showStatus('loading', '⚡ جاري استرجاع الإحداثيات عبر نمط الاستجابة السريعة...');
+            navigator.geolocation.getCurrentPosition(
+              (pos) => sendCoords(pos),
+              (finalErr) => handleError(finalErr),
+              { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+            );
+          } else {
+            handleError(err);
           }
         },
-        (error) => {
-          submitBtn.disabled = false;
-          let msg = '⚠️ يجب السماح بصلاحية الموقع وتفعيل الـ GPS لتسجيل البصمة.';
-          if (error.code === error.TIMEOUT) msg = '⚠️ انتهت مهلة قراءة الموقع، يرجى المحاولة ثانية.';
-          showStatus('error', msg);
-        },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
       );
+    }
+
+    async function sendCoords(position) {
+      const coords = position.coords;
+      showStatus('loading', '⚡ جاري التحقق من النطاق وتسجيل البصمة في السجلات...');
+
+      try {
+        const response = await fetch(SUBMIT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: token,
+            lat: coords.latitude,
+            lng: coords.longitude,
+            accuracy: coords.accuracy,
+            posTime: position.timestamp,
+            clientTime: Date.now()
+          })
+        });
+
+        const res = await response.json();
+
+        if (res.status === 'OK') {
+          pageTitle.textContent = 'تم التسجيل بنجاح ✅';
+          pageDesc.textContent = res.message || 'تم اعتماد تسجيل دوامك بنجاح.';
+          submitBtn.style.display = 'none';
+          showStatus('success', 'شكراً لك، يمكنك إغلاق الصفحة الآن والعودة للواتساب.');
+        } else {
+          pageTitle.textContent = 'تعذر التسجيل ❌';
+          pageDesc.textContent = res.message || 'أنت خارج النطاق المسموح به للفرع.';
+          submitBtn.disabled = false;
+          showStatus('error', res.message || 'فشلت عملية التحقق.');
+        }
+      } catch (e) {
+        submitBtn.disabled = false;
+        showStatus('error', '⚠️ حدث خطأ في الاتصال بالسيرفر. يرجى التأكد من الإنترنت والمحاولة مرة أخرى.');
+      }
+    }
+
+    function handleError(error) {
+      submitBtn.disabled = false;
+      let msg = '⚠️ يجب السماح بصلاحية الموقع وتفعيل الـ GPS لتسجيل البصمة.';
+      if (error.code === error.PERMISSION_DENIED) {
+        msg = '❌ تم رفض صلاحية الموقع. يرجى السماح بالوصول من إعدادات المتصفح.';
+      } else if (error.code === error.TIMEOUT) {
+        msg = '⚠️ تعذر التقاط إشارة الموقع. يرجى فتح الموقع والتجربة مجدداً.';
+      }
+      showStatus('error', msg);
     }
   </script>
 </body>
