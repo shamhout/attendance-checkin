@@ -4,6 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>dot Ai - تسجيل الحضور الذكي</title>
+
+  <!-- أيقونة الموقع في تبويب المتصفح (Favicon) -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -221,8 +227,7 @@
   </div>
 
   <script>
-    // ⚠️ استبدل هذا الرابط برابط الـ Production Webhook الثاني من n8n لاحقاً
-    const SUBMIT_URL = 'https://YOUR-N8N-PUBLIC-URL/webhook/checkin-submit';
+    const SUBMIT_URL = 'https://primary-production-3041.up.railway.app/webhook/checkin-submit';
 
     const token = new URLSearchParams(location.search).get('t');
     const statusBox = document.getElementById('statusBox');
@@ -251,11 +256,9 @@
       submitBtn.disabled = true;
       showStatus('loading', '🛰️ جاري التقاط إحداثيات الموقع الحالي...');
 
-      // المحاولة الأولى: قراءة عالية الدقة
       navigator.geolocation.getCurrentPosition(
         (pos) => sendCoords(pos),
         (err) => {
-          // إذا انتهت المهلة، التبديل السريع للقراءة التلقائية لضمان عدم التعليق
           if (err.code === err.TIMEOUT) {
             showStatus('loading', '⚡ جاري استرجاع الإحداثيات عبر نمط الاستجابة السريعة...');
             navigator.geolocation.getCurrentPosition(
