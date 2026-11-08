@@ -2,125 +2,255 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>بصمة الحضور الذكية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>dot Ai - تسجيل الحضور الذكي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-dark: #070b14;
+      --card-bg: rgba(13, 22, 41, 0.75);
+      --neon-blue: #00d2ff;
+      --neon-cyan: #00f2fe;
+      --neon-glow: rgba(0, 210, 255, 0.4);
+      --text-main: #ffffff;
+      --text-muted: #8ea1c1;
+      --border-color: rgba(0, 210, 255, 0.2);
+      --success: #00e676;
+      --danger: #ff5252;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Cairo', -apple-system, sans-serif;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f0f2f5;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.15) 0%, transparent 60%),
+        radial-gradient(circle at 50% 100%, rgba(0, 114, 255, 0.1) 0%, transparent 50%);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      box-sizing: border-box;
+      padding: 16px;
+      overflow-x: hidden;
     }
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 30px 25px;
-      max-width: 400px;
+
+    .container {
       width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      padding: 36px 24px 28px;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 210, 255, 0.08);
+      position: relative;
     }
-    .icon {
-      font-size: 50px;
-      margin-bottom: 15px;
+
+    .logo-wrapper {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    h2 {
-      margin: 0 0 10px 0;
-      color: #1a1a1a;
-      font-size: 22px;
-    }
-    p {
-      color: #666;
-      font-size: 14px;
-      line-height: 1.6;
-      margin: 0 0 25px 0;
-    }
-    .btn {
-      background: #25D366;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 15px 25px;
-      font-size: 16px;
-      font-weight: bold;
+
+    .logo-wrapper::after {
+      content: '';
+      position: absolute;
       width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      filter: blur(20px);
+      opacity: 0.35;
+      z-index: 1;
+    }
+
+    .logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid var(--neon-blue);
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 0 25px var(--neon-glow);
+    }
+
+    .brand-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--neon-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .sub-title {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 26px;
+      line-height: 1.5;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 18px 24px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      transition: background 0.2s;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0, 114, 255, 0.45);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn:active {
-      background: #1eb857;
+
+    .btn-submit:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 15px rgba(0, 114, 255, 0.6);
     }
-    .status {
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-card {
       margin-top: 20px;
-      font-size: 14px;
-      font-weight: 500;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.6;
       display: none;
-      padding: 12px;
-      border-radius: 8px;
+      animation: fadeIn 0.3s ease-out;
     }
-    .status.loading { display: block; background: #e8f4fd; color: #0288d1; }
-    .status.success { display: block; background: #e8f8ed; color: #2e7d32; }
-    .status.error { display: block; background: #fde8e8; color: #c62828; }
+
+    .status-card.loading {
+      display: block;
+      background: rgba(0, 210, 255, 0.1);
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      color: var(--neon-cyan);
+    }
+
+    .status-card.success {
+      display: block;
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      color: var(--success);
+    }
+
+    .status-card.error {
+      display: block;
+      background: rgba(255, 82, 82, 0.1);
+      border: 1px solid rgba(255, 82, 82, 0.3);
+      color: var(--danger);
+    }
+
+    .footer-secure {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer-secure span {
+      color: var(--neon-blue);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <div class="icon" id="iconDisplay">📍</div>
-    <h2 id="titleDisplay">تسجيل الحضور والانصراف</h2>
-    <p id="descDisplay">يرجى الضغط على الزر أدناه لتأكيد موقعك الجغرافي الحالي واعتماد بصمتك.</p>
-    
-    <button class="btn" id="submitBtn" onclick="submitLocation()">
-      <span>تأكيد الموقع وتسجيل البصمة</span>
+  <div class="container">
+    <div class="logo-wrapper">
+      <img src="logo.png" alt="dot Ai" class="logo-img" onerror="this.src='https://raw.githubusercontent.com/shamhout/attendance-checkin/main/logo.png'">
+    </div>
+
+    <h1 class="brand-title" id="pageTitle">تسجيل الدوام الذكي</h1>
+    <p class="sub-title" id="pageDesc">منظومة الحضور والانصراف المعتمدة بالتحقق الجغرافي الفوري</p>
+
+    <button class="btn-submit" id="submitBtn" onclick="submitAttendance()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span>تأكيد موقعي وتسجيل البصمة</span>
     </button>
 
-    <div class="status" id="statusBox"></div>
+    <div class="status-card" id="statusBox"></div>
+
+    <div class="footer-secure">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      مؤمن بالكامل بواسطة <span>dot Ai Architecture</span>
+    </div>
   </div>
 
   <script>
-    // ⚠️ استبدل هذا الرابط برابط الـ Production Webhook الثاني من n8n لاحقاً
+    // ⚠️ استبدل هذا الرابط لاحقاً برابط الـ Production Webhook الثاني من n8n
     const SUBMIT_URL = 'https://YOUR-N8N-PUBLIC-URL/webhook/checkin-submit';
 
     const token = new URLSearchParams(location.search).get('t');
     const statusBox = document.getElementById('statusBox');
     const submitBtn = document.getElementById('submitBtn');
-    const titleDisplay = document.getElementById('titleDisplay');
-    const descDisplay = document.getElementById('descDisplay');
-    const iconDisplay = document.getElementById('iconDisplay');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageDesc = document.getElementById('pageDesc');
 
     if (!token) {
-      showStatus('error', 'رابط غير صالح أو منتهي الصلاحية.');
+      showStatus('error', '⚠️ الرابط غير صالح أو مفتوح بشكل غير مباشر. يرجى طلب رابط جديد من محادثة الواتساب.');
       submitBtn.style.display = 'none';
     }
 
-    function showStatus(type, msg) {
-      statusBox.className = 'status ' + type;
-      statusBox.textContent = msg;
+    function showStatus(type, text) {
+      statusBox.className = 'status-card ' + type;
+      statusBox.textContent = text;
     }
 
-    function submitLocation() {
+    function submitAttendance() {
+      if (!token) return;
+
       if (!navigator.geolocation) {
-        showStatus('error', 'متصفحك لا يدعم تحديد الموقع الجغرافي.');
+        showStatus('error', '❌ جهازك لا يدعم تحديد الموقع الجغرافي الدقيق.');
         return;
       }
 
       submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.6';
-      showStatus('loading', 'جاري تحديد إحداثياتك بدقة عالية...');
+      showStatus('loading', '🛰️ جاري التقاط إحداثيات الـ GPS بدقة عالية...');
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const coords = position.coords;
-          showStatus('loading', 'جاري التحقق من النطاق وتسجيل البصمة...');
+          showStatus('loading', '⚡ جاري التحقق من النطاق وتسجيل البصمة في السجلات...');
 
           try {
             const response = await fetch(SUBMIT_URL, {
@@ -136,38 +266,33 @@
               })
             });
 
-            const resData = await response.json();
+            const res = await response.json();
 
-            if (resData.status === 'OK') {
-              iconDisplay.textContent = '✅';
-              titleDisplay.textContent = 'تم التسجيل بنجاح';
-              descDisplay.textContent = resData.message || 'تم اعتماد حضورك/انصرافك بنجاح.';
+            if (res.status === 'OK') {
+              pageTitle.textContent = 'تم التسجيل بنجاح ✅';
+              pageDesc.textContent = res.message || 'تم اعتماد تسجيل دوامك بنجاح.';
               submitBtn.style.display = 'none';
-              showStatus('success', 'يمكنك إغلاق هذه الصفحة الآن.');
+              showStatus('success', 'شكراً لك، يمكنك إغلاق الصفحة الآن والعودة للواتساب.');
             } else {
-              iconDisplay.textContent = '❌';
-              titleDisplay.textContent = 'تعذر التسجيل';
-              descDisplay.textContent = resData.message || 'الموقع خارج نطاق الفرع المعتمد.';
+              pageTitle.textContent = 'تعذر التسجيل ❌';
+              pageDesc.textContent = res.message || 'أنت خارج النطاق المسموح به للفرع.';
               submitBtn.disabled = false;
-              submitBtn.style.opacity = '1';
-              showStatus('error', resData.message || 'فشل التحقق.');
+              showStatus('error', res.message || 'فشلت عملية التحقق.');
             }
-          } catch (err) {
+          } catch (e) {
             submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            showStatus('error', 'فشل الاتصال بالخادم، يرجى المحاولة ثانية.');
+            showStatus('error', '⚠️ حدث خطأ في الاتصال بالسيرفر. يرجى التأكد من الإنترنت والمحاولة مرة أخرى.');
           }
         },
         (error) => {
           submitBtn.disabled = false;
-          submitBtn.style.opacity = '1';
-          let errText = 'يرجى تفعيل الـ GPS والسماح للمتصفح بالوصول للموقع.';
-          if (error.code === error.TIMEOUT) errText = 'انتهت مهلة قراءة الموقع، حاول مجدداً.';
-          showStatus('error', errText);
+          let msg = '⚠️ يجب السماح بصلاحية الموقع وتفعيل الـ GPS لتسجيل البصمة.';
+          if (error.code === error.TIMEOUT) msg = '⚠️ انتهت مهلة قراءة الموقع، يرجى المحاولة ثانية.';
+          showStatus('error', msg);
         },
         { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
       );
     }
   </script>
 </body>
-</html>ذ  
+</html>
